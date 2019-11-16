@@ -4,11 +4,8 @@ import argparse
 import aubio
 import matplotlib.pyplot as plt
 import numpy as np
-from pydub import AudioSegment
-from pydub import playback
+from pydub import AudioSegment, playback
 import threading
-from time import sleep, time
-import pylab
 
 def plotter(tabX, tabY, line):
     if line == []:
@@ -25,14 +22,6 @@ def plotter(tabX, tabY, line):
 
     plt.pause(0.01)
     return line
-
-def webplotter():
-    """pylab.plot(samples)
-    pylab.grid()
-    pylab.axis([0, len(samples), -0.5, 0.5])
-    pylab.savefig("img.png", dpi=50)
-    pylab.close('all')"""
-    pass
 
 def play(file):
     song = AudioSegment.from_wav(file)
