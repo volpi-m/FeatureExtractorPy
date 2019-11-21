@@ -5,18 +5,18 @@ import aubio
 import matplotlib.pyplot as plt
 import numpy as np
 from pydub import AudioSegment, playback
-#from pyqtgraph.Qt import QtGui, QtCore
-#import pyqtgraph as pg
+from pyqtgraph.Qt import QtGui, QtCore
+import pyqtgraph as pg
 import threading
 import time
-
 import converter
+import plotter
 
 
 currentTime = lambda: int(round(time.time() * 1000))
 
 
-def plotter(tabX, tabY, line):
+def plotter_(tabX, tabY, line):
     if line == []:
         plt.ion()
         fig = plt.figure(figsize=(13, 6), num=0)
@@ -83,33 +83,6 @@ def main():
 
     hopSize, s = audioProcess(file)
 
-    if args.m is True:
-        plt.style.use("ggplot")
-    """
-    else:
-        app = QtGui.QGuiApplication([])
-        win = pg.GraphicsLayoutWidget(show = True, title="Audio feature extractor")
-        win.resize(1000, 600)
-
-        pg.setConfigOptions(antialias=True)
-
-        plot = win.addPlot(title="Pitch")
-        curve = plot.plot()
-        data = np.random.normal(size=(10,1000))
-        ptr = 0
-        def update():
-            global ptr
-            curve.setData(data[ptr % 10])
-            if ptr == 0:
-                plot.enableAutoRange('xy', False)
-            ptr += 1
-        timer = QtCore.QTimer()
-        timer.timeout.connect(update)
-        timer.start(50)
-
-        QtGui.QApplication.instance().exec_()
-    """
-
     tabX = np.linspace(0, 1, hopSize + 1)[0:-1]
     line = []
 
@@ -125,7 +98,7 @@ def main():
 
         # Compute time it takes to plot one frame with matplotlib
         startTime = currentTime()
-        line = plotter(tabX, samples, line)
+        line = plotter_(tabX, samples, line)
         endTime = currentTime()
 
         # Sleep for a small amount of time to keep the program synchronized because
