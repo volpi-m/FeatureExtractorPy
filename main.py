@@ -5,11 +5,12 @@ import aubio
 import matplotlib.pyplot as plt
 import numpy as np
 from pydub import AudioSegment, playback
-from pyqtgraph.Qt import QtGui, QtCore
-import pyqtgraph as pg
+#from pyqtgraph.Qt import QtGui, QtCore
+#import pyqtgraph as pg
 import threading
 import time
-import sys
+
+import converter
 
 
 currentTime = lambda: int(round(time.time() * 1000))
@@ -18,7 +19,7 @@ currentTime = lambda: int(round(time.time() * 1000))
 def plotter(tabX, tabY, line):
     if line == []:
         plt.ion()
-        fig = plt.figure(figsize=(13, 6))
+        fig = plt.figure(figsize=(13, 6), num=0)
         ax = fig.add_subplot(111)
         line, = ax.plot(tabX, tabY, '-o', alpha=0.8)
         plt.show()
@@ -47,9 +48,9 @@ def argumentParsing():
     return parser.parse_args()
 
 
-def audioProcess(args):
+def audioProcess(file):
     # Open audio file to get samplerate and duration of the track then close it
-    s = aubio.source(args.file)
+    s = aubio.source(file)
     samplerate = s.samplerate
     duration = s.duration
     s.close()
@@ -62,7 +63,7 @@ def audioProcess(args):
     hopSize = samplerate // 20
 
     # Reopen the file with a new hopSize according to its samplerate
-    s = aubio.source(args.file, hop_size=hopSize)
+    s = aubio.source(file, hop_size=hopSize)
 
     pitchOutput = aubio.pitch("default", 4096, hopSize, s.samplerate)
     pitchOutput.set_unit("midi")
@@ -76,7 +77,11 @@ def main():
     args = argumentParsing()
     #print(args)
 
-    hopSize, s = audioProcess(args)
+    ext = args.file.split(".")[-1]
+    if ext is not "wav":
+        file = converter.convert(args.file, ext)
+
+    hopSize, s = audioProcess(file)
 
     if args.m is True:
         plt.style.use("ggplot")
@@ -111,7 +116,8 @@ def main():
     # Play music of another thread because pydub is blocking, another method is probably better
     # but this is what I got
     if args.p is True:
-        threading.Thread(target=lambda: play(args.file)).start()
+        t = threading.Thread(target=lambda: play(file))
+        t.start()
 
     while True:
         # Get new samples from file
@@ -130,7 +136,7 @@ def main():
         #print("'", sleepTime, "'")
         time.sleep(sleepTime if sleepTime > 0 else 0)
 
-        if read < hopSize:
+        if read < hopSize or plt.fignum_exists(0) is False:
             break
 
 
