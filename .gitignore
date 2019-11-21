@@ -105,5 +105,5 @@ venv.bak/
 
 # Custom
 memo
-*.wav
+music/
 test/
