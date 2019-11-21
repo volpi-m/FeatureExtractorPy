@@ -5,8 +5,11 @@ import aubio
 import matplotlib.pyplot as plt
 import numpy as np
 from pydub import AudioSegment, playback
+from pyqtgraph.Qt import QtGui, QtCore
+import pyqtgraph as pg
 import threading
 import time
+import sys
 
 
 currentTime = lambda: int(round(time.time() * 1000))
@@ -35,15 +38,16 @@ def play(file):
     playback.play(song)
 
 
-def main():
-    # Argument parsing
+def argumentParsing():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="name of the file you want to analyze")
-    parser.add_argument("-m", action="store_const", dest="m", const=True, help="display data with matplotlib")
+    parser.add_argument("-m", action="store_const", dest="m", const=True, default=False, help="display data with matplotlib")
+    parser.add_argument("-qt", action="store_const", dest="qt", const=True, default=False, help="display data with pyqtgraph")
     parser.add_argument("-p", action="store_const", dest="p", const=False, default=True,  help="don't play sound when showing data")
-    args = parser.parse_args()
-    #print(args)
+    return parser.parse_args()
 
+
+def audioProcess(args):
     # Open audio file to get samplerate and duration of the track then close it
     s = aubio.source(args.file)
     samplerate = s.samplerate
@@ -62,9 +66,44 @@ def main():
 
     pitchOutput = aubio.pitch("default", 4096, hopSize, s.samplerate)
     pitchOutput.set_unit("midi")
-    #pitchOutput.set_tolerance(0.8)
+    pitchOutput.set_tolerance(0.8)
 
-    plt.style.use("ggplot")
+    return hopSize, s
+
+
+def main():
+    # Argument parsing
+    args = argumentParsing()
+    #print(args)
+
+    hopSize, s = audioProcess(args)
+
+    if args.m is True:
+        plt.style.use("ggplot")
+    """
+    else:
+        app = QtGui.QGuiApplication([])
+        win = pg.GraphicsLayoutWidget(show = True, title="Audio feature extractor")
+        win.resize(1000, 600)
+
+        pg.setConfigOptions(antialias=True)
+
+        plot = win.addPlot(title="Pitch")
+        curve = plot.plot()
+        data = np.random.normal(size=(10,1000))
+        ptr = 0
+        def update():
+            global ptr
+            curve.setData(data[ptr % 10])
+            if ptr == 0:
+                plot.enableAutoRange('xy', False)
+            ptr += 1
+        timer = QtCore.QTimer()
+        timer.timeout.connect(update)
+        timer.start(50)
+
+        QtGui.QApplication.instance().exec_()
+    """
 
     tabX = np.linspace(0, 1, hopSize + 1)[0:-1]
     line = []
@@ -75,12 +114,16 @@ def main():
         threading.Thread(target=lambda: play(args.file)).start()
 
     while True:
+        # Get new samples from file
         samples, read = s()
 
+        # Compute time it takes to plot one frame with matplotlib
         startTime = currentTime()
         line = plotter(tabX, samples, line)
         endTime = currentTime()
 
+        # Sleep for a small amount of time to keep the program synchronized because
+        #   each frame render 50ms of sample
         diff = endTime - startTime
         sleepTime = (50 - diff) / 1000
 

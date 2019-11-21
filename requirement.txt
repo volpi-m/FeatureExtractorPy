@@ -1,0 +1,3 @@
+aubio
+matplotlib
+pyqtgraph==0.10.0
