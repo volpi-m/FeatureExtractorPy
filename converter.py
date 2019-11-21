@@ -2,20 +2,25 @@ from pydub import AudioSegment
 import sys
 
 
-AVAILABE_EXT = ["mp3", "ogg"]
+class Converter:
 
+    def __init__(self, file):
+        self.AVAILABE_EXTENSION = ["mp3", "ogg"]
+        self.file = file
+        self.name = file[:file.rfind(".")]
+        self.ext = self.file.split(".")[-1]
 
-def convert(file, ext):
-    fileSplit = file.split(".")
+        # Check if the current file type is a supported
+        # otherwise raise exception if no converions could be done
+        if self.ext not in self.AVAILABE_EXTENSION:
+            raise Exception("Format file not availabe for conversion")
 
-    # Loop through all available extension
-    for e in AVAILABE_EXT:
-        if ext == e:
-            # If a correct extension is found, convert the file to .wav
-            snd = AudioSegment.from_file(file, format=fileSplit[-1])
-            name = fileSplit[0] + ".wav"
-            snd.export(name, format="wav")
-        return fileSplit[0] + ".wav"
+    def convert(self, ext):
+        """
+        Convert the file to the specified format
+        """
 
-    # Raise exception if no converions could be done
-    raise Exception("Format file not availabe for conversion")
+        snd = AudioSegment.from_file(self.file, format=self.ext)
+        newName = self.name + ext
+        snd.export(newName, format=ext)
+        return self.name + ext

@@ -9,7 +9,7 @@ from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
 import threading
 import time
-import converter
+from converter import Converter
 import plotter
 
 
@@ -77,9 +77,9 @@ def main():
     args = argumentParsing()
     #print(args)
 
-    ext = args.file.split(".")[-1]
-    if ext is not "wav":
-        file = converter.convert(args.file, ext)
+    # Convert file from other format to wav to handle 
+    if args.file.split(".")[-1] is not "wav":
+        file = Converter(args.file).convert("wav")
 
     hopSize, s = audioProcess(file)
 
