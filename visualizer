@@ -52,24 +52,19 @@ def audioProcess(file):
     # Open audio file to get samplerate and duration of the track then close it
     s = aubio.source(file)
     samplerate = s.samplerate
-    duration = s.duration
     s.close()
 
-    # Compute length of track in seconds, divide the total nubmer of samples by sumber of sample
-    # for one second
-    print(s.duration, samplerate, duration / samplerate)
-
     # I want to update the plot 20 times per second, so hopSize is the number of sample aubio should send me
-    hopSize = samplerate // 20
+    sampleSize = samplerate // 20
 
     # Reopen the file with a new hopSize according to its samplerate
-    s = aubio.source(file, hop_size=hopSize)
+    s = aubio.source(file, hop_size=sampleSize)
 
-    pitchOutput = aubio.pitch("default", 4096, hopSize, s.samplerate)
+    pitchOutput = aubio.pitch("default", 4096, sampleSize, s.samplerate)
     pitchOutput.set_unit("midi")
     pitchOutput.set_tolerance(0.8)
 
-    return hopSize, s
+    return sampleSize, s
 
 
 def main():
@@ -78,13 +73,13 @@ def main():
     #print(args)
 
     # Convert file from other format to wav to handle 
-    if args.file.split(".")[-1] is not "wav":
+    file = ""
+    if args.file.split(".")[-1] != "wav":
         file = Converter(args.file).convert("wav")
+    else:
+        file = args.file
 
-    hopSize, s = audioProcess(file)
-
-    tabX = np.linspace(0, 1, hopSize + 1)[0:-1]
-    line = []
+    sampleSize, s = audioProcess(file)
 
     # Play music of another thread because pydub is blocking, another method is probably better
     # but this is what I got
@@ -92,25 +87,9 @@ def main():
         t = threading.Thread(target=lambda: play(file))
         t.start()
 
-    while True:
-        # Get new samples from file
-        samples, read = s()
-
-        # Compute time it takes to plot one frame with matplotlib
-        startTime = currentTime()
-        line = plotter_(tabX, samples, line)
-        endTime = currentTime()
-
-        # Sleep for a small amount of time to keep the program synchronized because
-        #   each frame render 50ms of sample
-        diff = endTime - startTime
-        sleepTime = (50 - diff) / 1000
-
-        #print("'", sleepTime, "'")
-        time.sleep(sleepTime if sleepTime > 0 else 0)
-
-        if read < hopSize or plt.fignum_exists(0) is False:
-            break
+    if args.qt is True:
+        plotter.QtPlotter(s, sampleSize)
+        return
 
 
 if __name__ == "__main__":
