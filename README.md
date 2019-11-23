@@ -5,7 +5,7 @@ Show pitch of an audio file in real time. Can take a wav, mp3 or ogg audio file
 ## Install dependencies
 
 ```
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ## Run application
