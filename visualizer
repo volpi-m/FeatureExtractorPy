@@ -2,7 +2,6 @@
 
 import argparse
 import aubio
-import matplotlib.pyplot as plt
 import numpy as np
 from pydub import AudioSegment, playback
 from pyqtgraph.Qt import QtGui, QtCore
@@ -16,24 +15,8 @@ import plotter
 currentTime = lambda: int(round(time.time() * 1000))
 
 
-def plotter_(tabX, tabY, line):
-    if line == []:
-        plt.ion()
-        fig = plt.figure(figsize=(13, 6), num=0)
-        ax = fig.add_subplot(111)
-        line, = ax.plot(tabX, tabY, '-o', alpha=0.8)
-        plt.show()
-
-    line.set_ydata(tabY)
-
-    if np.min(tabY) <= line.axes.get_ylim()[0] or np.max(tabY) >= line.axes.get_ylim()[1]:
-        plt.ylim([np.min(tabY) - np.std(tabY),np.max(tabY) + np.std(tabY)])
-
-    plt.pause(0.005)
-    return line
-
-
 def play(file):
+    # Play sound
     time.sleep(0.1)
     song = AudioSegment.from_wav(file)
     playback.play(song)
@@ -42,7 +25,6 @@ def play(file):
 def argumentParsing():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="name of the file you want to analyze")
-    parser.add_argument("-m", action="store_const", dest="m", const=True, default=False, help="display data with matplotlib")
     parser.add_argument("-qt", action="store_const", dest="qt", const=True, default=False, help="display data with pyqtgraph")
     parser.add_argument("-p", action="store_const", dest="p", const=False, default=True,  help="don't play sound when showing data")
     return parser.parse_args()
@@ -72,21 +54,23 @@ def main():
     args = argumentParsing()
     #print(args)
 
-    # Convert file from other format to wav to handle 
+    # Convert file from other format to wav to handle mp3 and ogg
     file = ""
     if args.file.split(".")[-1] != "wav":
         file = Converter(args.file).convert("wav")
     else:
         file = args.file
 
+    # Get the size of one sample and a callable to get samples regularly
     sampleSize, s = audioProcess(file)
 
     # Play music of another thread because pydub is blocking, another method is probably better
-    # but this is what I got
+    # but I don't know how
     if args.p is True:
         t = threading.Thread(target=lambda: play(file))
         t.start()
 
+    # Plot samples thanks to pyqtgraph
     if args.qt is True:
         plotter.QtPlotter(s, sampleSize)
         return

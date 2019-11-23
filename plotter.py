@@ -11,20 +11,23 @@ class QtPlotter:
 
         QtGui.QApplication([])
 
+        # Setup window
         self.win = pg.GraphicsWindow(title="Audio feature extractor")
         self.win.resize(1000, 600)
-
         pg.setConfigOptions(antialias=True)
 
+        # Setup plot and add a new curve
         self.plot = self.win.addPlot(title="Pitch")
         self.curve = self.plot.plot(pen='y')
         self.plot.setYRange(-2, 2)
         self.data = np.random.normal(size=(10, 100))
 
+        # Setup timer, call __update every 50ms to plot new samples
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.__update)
         self.timer.start(50)
 
+        # Run Qt window
         pg.QtGui.QApplication.instance().exec_()
 
 
