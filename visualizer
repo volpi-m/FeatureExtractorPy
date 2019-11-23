@@ -4,8 +4,6 @@ import argparse
 import aubio
 import numpy as np
 from pydub import AudioSegment, playback
-from pyqtgraph.Qt import QtGui, QtCore
-import pyqtgraph as pg
 import threading
 import time
 from converter import Converter
@@ -25,7 +23,7 @@ def play(file):
 def argumentParsing():
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="name of the file you want to analyze")
-    parser.add_argument("-qt", action="store_const", dest="qt", const=True, default=False, help="display data with pyqtgraph")
+    parser.add_argument("-qt", action="store_const", dest="qt", const=True, default=True, help="display data with pyqtgraph")
     parser.add_argument("-p", action="store_const", dest="p", const=False, default=True,  help="don't play sound when showing data")
     return parser.parse_args()
 
