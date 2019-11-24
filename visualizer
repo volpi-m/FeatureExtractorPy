@@ -73,6 +73,8 @@ def main():
         plotter.QtPlotter(s, sampleSize)
         return
 
+    t.join()
+
 
 if __name__ == "__main__":
     main()
