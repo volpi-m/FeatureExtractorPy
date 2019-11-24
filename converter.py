@@ -23,6 +23,6 @@ class Converter:
         """
 
         snd = AudioSegment.from_file(self.file, format=self.ext)
-        newName = self.name + ext
+        newName = self.name + "." + ext
         snd.export(newName, format=ext)
-        return self.name + ext
+        return newName
