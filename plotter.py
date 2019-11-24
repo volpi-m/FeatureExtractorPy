@@ -19,7 +19,7 @@ class QtPlotter:
         # Setup plot and add a new curve
         self.plot = self.win.addPlot(title="Pitch")
         self.curve = self.plot.plot(pen='y')
-        self.plot.setYRange(-2, 2)
+        self.plot.setYRange(-1, 1)
         self.data = np.random.normal(size=(10, 100))
 
         # Setup timer, call __update every 50ms to plot new samples
